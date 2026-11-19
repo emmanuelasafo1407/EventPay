@@ -1,0 +1,53 @@
+
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+
+import { AuthService } from './auth.service.js';
+import { RegisterDto } from './dto/register.dto.js';
+import { LoginDto } from './dto/login.dto.js';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
+import { RolesGuard } from './roles.guard.js';
+import { Roles } from './decorators/roles.decorator.js';
+import { UserRole } from '../generated/prisma/client.js';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(
+    @Request()
+    req: { user: { id: string; email: string; role: string } },
+  ) {
+    return {
+      message: 'Authenticated successfully',
+      user: req.user,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+  @Get('organizer-test')
+  organizerTest() {
+    return {
+      message: 'Organizer access granted',
+    };
+  }
+}
