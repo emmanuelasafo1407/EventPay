@@ -14,6 +14,11 @@ import { RolesGuard } from './roles.guard.js';
       useFactory: () => {
         const secret = process.env.JWT_SECRET;
 
+        // Temporary diagnostic: never print the actual secret.
+        console.log(
+          `[JWT DEBUG] Present: ${Boolean(secret)}, Length: ${secret?.length ?? 0}`,
+        );
+
         if (!secret || secret.length < 32) {
           throw new Error(
             'JWT_SECRET must be set and at least 32 characters long',
